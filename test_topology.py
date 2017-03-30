@@ -6,6 +6,17 @@ from mininet.link import TCLink
 from mininet.cli import CLI
 from mininet.log import setLogLevel
 import socket
+import thread
+import time
+
+
+def socketComunnication():
+    s = socket.socket()  # Create a socket object
+    host = socket.gethostname()  # Get local machine name
+    port = 12345  # Reserve a port for your service.
+    s.connect((host, port))
+    print s.recv(1024)
+    s.close  # Close the socket when done
 
 
 def topology():
@@ -27,7 +38,7 @@ def topology():
     ap2 = net.addAccessPoint('ap2', ssid='AP2', mode='g', channel='2', position='80,50,0', range='30')
     ap3 = net.addAccessPoint('ap3', ssid='AP3', mode='g', channel='1', position='120,100,0', range='30')
     sta1 = net.addStation('sta1', mac='00:00:00:00:00:10', ip='10.0.0.10/24', position='80,40,0')
-    c0 = net.addController('c0', controller=RemoteController, ip='127.0.0.1', port=6633)
+    c0 = net.addController('c0', controller=RemoteController, ip='127.0.0.1', port=6653)
 
     net.configureWifiNodes()
 
@@ -67,14 +78,6 @@ def topology():
     net.mobility(sta1, 'stop', time=30, position='20.0,20.0,0.0')
     net.stopMobility(stopTime=31)
 
-    s = socket.socket()  # Create a socket object
-    host = socket.gethostname()  # Get local machine name
-    port = 12345  # Reserve a port for your service.
-
-    s.connect((host, port))
-    print s.recv(1024)
-    s.close  # Close the socket when done
-
     print "Running CLI"
     CLI(net)
 
@@ -84,4 +87,5 @@ def topology():
 
 if __name__ == '__main__':
     setLogLevel('info')
+    thread.start_new_thread(socketComunnication, ())
     topology()
