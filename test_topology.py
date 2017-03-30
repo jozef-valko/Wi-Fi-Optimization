@@ -14,9 +14,15 @@ def socketComunnication():
     s = socket.socket()  # Create a socket object
     host = socket.gethostname()  # Get local machine name
     port = 12345  # Reserve a port for your service.
-    s.connect((host, port))
-    print s.recv(1024)
-    s.close  # Close the socket when done
+    try:
+        s.connect((host, port))
+        while 1:
+            s.send('hello')
+            time.sleep(1)
+        #print s.recv(1024)
+        #s.close  # Close the socket when done
+    except:
+        print 'Can\'t connect to algorithm application'
 
 
 def topology():
