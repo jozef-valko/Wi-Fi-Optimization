@@ -1,7 +1,0 @@
-interface=ap1-wlan1
-driver=nl80211
-ssid=AP1
-hw_mode=g
-channel=1
-wme_enabled=1
-wmm_enabled=1

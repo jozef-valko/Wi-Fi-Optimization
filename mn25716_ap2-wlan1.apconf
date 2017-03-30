@@ -1,7 +1,0 @@
-interface=ap2-wlan1
-driver=nl80211
-ssid=AP2
-hw_mode=g
-channel=2
-wme_enabled=1
-wmm_enabled=1
