@@ -1,3 +1,5 @@
+import struct
+
 from ryu.base import app_manager
 from ryu.controller.handler import set_ev_cls
 from ryu.controller import ofp_event
@@ -9,6 +11,19 @@ import socket
 import thread
 import time
 
+def recv_one_message(sock):
+    lengthbuf = recvall(sock, 4)
+    length = struct.unpack('!I', lengthbuf)
+    return recvall(sock, length)
+
+def recvall(sock, count):
+    buf = b''
+    while count:
+        newbuf = sock.recv(count)
+        if not newbuf: return None
+        buf += newbuf
+        count -= len(newbuf)
+    return buf
 
 def serverSocket():
     s = socket.socket()  # Create a socket object
@@ -21,7 +36,8 @@ def serverSocket():
         c, addr = s.accept()  # Establish connection with client.
         print 'Got connection from', addr
         while c:
-            print c.recv(1024)
+            data = recv_one_message(c)
+            print "data: ", data
         c.close()  # Close the connection
 
 thread.start_new_thread(serverSocket, ())

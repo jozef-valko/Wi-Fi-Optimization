@@ -1,4 +1,5 @@
 #!/usr/bin/python
+import struct
 
 from mininet.net import Mininet
 from mininet.node import Controller, RemoteController, OVSController, OVSKernelSwitch
@@ -9,15 +10,23 @@ import socket
 import thread
 import time
 
+def send_one_message(sock, data):
+    length = len(data)
+    sock.send(struct.pack('!I', length))
+    sock.send(data)
 
 def socketComunnication():
     s = socket.socket()  # Create a socket object
     host = socket.gethostname()  # Get local machine name
     port = 12345  # Reserve a port for your service.
+    #data = [1,2,3]
+    data = "hello"
     try:
         s.connect((host, port))
+        print 'Connected to algorithm application'
         while 1:
-            s.send('hello')
+            #s.send(data)
+            send_one_message(s,data)
             time.sleep(1)
         #print s.recv(1024)
         #s.close  # Close the socket when done
