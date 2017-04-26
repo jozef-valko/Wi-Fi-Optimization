@@ -1,0 +1,1 @@
+cmd_/home/jozef/PycharmProjects/Wi-Fi_Optimization/mac80211_hwsim.ko := ld -r -m elf_x86_64 -T ./scripts/module-common.lds --build-id  -o /home/jozef/PycharmProjects/Wi-Fi_Optimization/mac80211_hwsim.ko /home/jozef/PycharmProjects/Wi-Fi_Optimization/mac80211_hwsim.o /home/jozef/PycharmProjects/Wi-Fi_Optimization/mac80211_hwsim.mod.o
