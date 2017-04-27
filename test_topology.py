@@ -1,8 +1,6 @@
 #!/usr/bin/python
 import struct
-
 import pickle
-
 import subprocess
 from mininet.net import Mininet
 from mininet.node import RemoteController, OVSKernelSwitch, OVSKernelAP, Ryu
@@ -13,18 +11,23 @@ import socket
 import thread
 import time
 
-def insertIntoDict(ap,station,aDict):
+def insertIntoDict(ap, station, aDict):
     if not ap in aDict:
-        aDict[ap] = [station]
+        aDict[ap] = {}
+    if not 'stations' in aDict[ap]:
+        aDict[ap]['stations'] = [station]
     else:
-        aDict[ap].append(station)
+        aDict[ap]['stations'].append(station)
 
-def getStationsInRange(net):
-    stationsInRange = {}
+def getAccessPoints(net):
+    accessPoints = {}
     for ap in net.accessPoints:
         for sta in ap.params['stationsInRange']:
-            insertIntoDict(ap.name, sta.name, stationsInRange)
-    return stationsInRange
+            insertIntoDict(ap.name, sta.name, accessPoints)
+        if not ap.name in accessPoints:
+            accessPoints[ap.name] = {}
+        accessPoints[ap.name]['channel'] = ap.params['channel']
+    return accessPoints
 
 def send_one_message(sock, data):
     length = len(data)
@@ -39,12 +42,12 @@ def socketComunnication(net):
         s.connect((host, port))
         print 'Connected to algorithm application'
         while 1:
-            stationsInRange = getStationsInRange(net)
-            data = pickle.dumps(stationsInRange)
-            send_one_message(s,data)
+            accessPoints = getAccessPoints(net)
+            data = pickle.dumps(accessPoints)
+            send_one_message(s, data)
             time.sleep(1)
-        #print s.recv(1024)
-        #s.close  # Close the socket when done
+            #print s.recv(1024)
+            #s.close  # Close the socket when done
     except:
         print 'Can\'t connect to algorithm application'
 

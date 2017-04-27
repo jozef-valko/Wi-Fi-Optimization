@@ -1,5 +1,4 @@
 import struct
-
 import pickle
 from ryu.base import app_manager
 from ryu.controller.handler import set_ev_cls
@@ -16,32 +15,54 @@ import thread
 import time
 
 apOverlap = {}
+channels = [1,6,11,3,8,4,9,2,7,5,10]
 
-def insertIntoDict(ap,apOverlap,aDict):
+def insertIntoDict(ap,apTemp,aDict):
     if not ap in aDict:
-        aDict[ap] = [apOverlap]
+        aDict[ap] = [apTemp]
     else:
-        if apOverlap not in aDict[ap]:
-            aDict[ap].append(apOverlap)
+        if apTemp not in aDict[ap]:
+            aDict[ap].append(apTemp)
 
-def getStations(stationsInRange):
+def getStations(accessPoints):
     stations = []
-    for ap in stationsInRange:
-        for sta in range(0, len(stationsInRange[ap])):
-            if stationsInRange[ap][sta] not in stations:
-                stations.append(stationsInRange[ap][sta])
+    for ap in accessPoints:
+        if 'stations' in accessPoints[ap]:
+            for sta in range(0, len(accessPoints[ap]['stations'])):
+                if accessPoints[ap]['stations'][sta] not in stations:
+                    stations.append(accessPoints[ap]['stations'][sta])
     return stations
 
-def channelCheckAndAssignment(stationsInRange):
-    stations = getStations(stationsInRange)
+def updateApOverlap(stations, accessPoints):
     for sta in stations:
-        for ap in stationsInRange:
-            for apTemp in stationsInRange:
+        for ap in accessPoints:
+            for apTemp in accessPoints:
                 if ap is not apTemp:
-                    if sta in stationsInRange[ap] and sta in stationsInRange[apTemp]:
-                        insertIntoDict(ap, apTemp, apOverlap)
+                    if 'stations' in accessPoints[ap] and 'stations' in accessPoints[apTemp]:
+                        if sta in accessPoints[ap]['stations'] and sta in accessPoints[apTemp]['stations']:
+                            insertIntoDict(ap, apTemp, apOverlap)
+
+def changeChannel(accessPoints, apToChange):
+    for ch in channels:
+        if ch is not accessPoints[apToChange]['channel'][0]:
+            tmp = 0
+            for ap in range(0, len(apOverlap[apToChange])):
+                tmp = ap
+                if ch is accessPoints[apOverlap[apToChange][ap]]['channel'][0]:
+                    break
+            if tmp is len(apOverlap[apToChange])-1:
+                accessPoints[apToChange]['channel'][0] = ch
+                break
+
+def channelCheckAndAssignment(accessPoints):
+    stations = getStations(accessPoints)
+    updateApOverlap(stations, accessPoints)
     for ap in apOverlap:
-        print ap + ' ' + str(apOverlap[ap])
+        for apTemp in range(0, len(apOverlap[ap])):
+            if accessPoints[ap]['channel'][0] is accessPoints[apOverlap[ap][apTemp]]['channel'][0]:
+                changeChannel(accessPoints, apOverlap[ap][apTemp])
+    for ap in accessPoints:
+        print ap + ': ' + str(accessPoints[ap])
 
 def recv_one_message(sock):
     lengthbuf = recvall(sock, 4)
@@ -71,8 +92,8 @@ def serverSocket():
             print 'Got connection from', addr
             while c:
                 data = recv_one_message(c)
-                stationsInRange = pickle.loads(data)
-                channelCheckAndAssignment(stationsInRange)
+                accessPoints = pickle.loads(data)
+                channelCheckAndAssignment(accessPoints)
             c.close()  # Close the connection
         #except:
             #print 'Client disconnected'
