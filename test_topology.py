@@ -5,7 +5,7 @@ import pickle
 
 import subprocess
 from mininet.net import Mininet
-from mininet.node import RemoteController, OVSKernelSwitch, OVSKernelAP
+from mininet.node import RemoteController, OVSKernelSwitch, OVSKernelAP, Ryu
 from mininet.link import TCLink
 from mininet.cli import CLI
 from mininet.log import setLogLevel, info, output
@@ -88,7 +88,7 @@ def topology():
     #ap5 = net.addAccessPoint('ap5', ssid='AP5', mode='g', channel='6', position='30,30,0', range='30')
 
 
-    sta1 = net.addStation('sta1', mac='00:00:00:00:00:10', ip='10.0.0.10/24', position='50,50,0')
+    sta1 = net.addStation('sta1', mac='00:00:00:00:00:10', ip='10.0.0.10/24', position='0,0,0')
     sta2 = net.addStation('sta2', mac='00:00:00:00:00:20', ip='10.0.0.20/24', position='20,20,0')
     c0 = net.addController('c0', controller=RemoteController, ip='127.0.0.1', port=6653)
 

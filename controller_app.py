@@ -15,17 +15,33 @@ import socket
 import thread
 import time
 
+apOverlap = {}
+
+def insertIntoDict(ap,apOverlap,aDict):
+    if not ap in aDict:
+        aDict[ap] = [apOverlap]
+    else:
+        if apOverlap not in aDict[ap]:
+            aDict[ap].append(apOverlap)
+
 def getStations(stationsInRange):
     stations = []
     for ap in stationsInRange:
         for sta in range(0, len(stationsInRange[ap])):
             if stationsInRange[ap][sta] not in stations:
                 stations.append(stationsInRange[ap][sta])
-    print stations
     return stations
 
 def channelCheckAndAssignment(stationsInRange):
     stations = getStations(stationsInRange)
+    for sta in stations:
+        for ap in stationsInRange:
+            for apTemp in stationsInRange:
+                if ap is not apTemp:
+                    if sta in stationsInRange[ap] and sta in stationsInRange[apTemp]:
+                        insertIntoDict(ap, apTemp, apOverlap)
+    for ap in apOverlap:
+        print ap + ' ' + str(apOverlap[ap])
 
 def recv_one_message(sock):
     lengthbuf = recvall(sock, 4)
