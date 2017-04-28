@@ -54,15 +54,18 @@ def changeChannel(accessPoints, apToChange):
                 accessPoints[apToChange]['channel'][0] = ch
                 break
 
-def channelCheckAndAssignment(accessPoints):
+def channelOptimization(accessPoints):
     stations = getStations(accessPoints)
     updateApOverlap(stations, accessPoints)
     for ap in apOverlap:
         for apTemp in range(0, len(apOverlap[ap])):
             if accessPoints[ap]['channel'][0] is accessPoints[apOverlap[ap][apTemp]]['channel'][0]:
                 changeChannel(accessPoints, apOverlap[ap][apTemp])
-    for ap in accessPoints:
-        print ap + ': ' + str(accessPoints[ap])
+
+def send_one_message(sock, data):
+    length = len(data)
+    sock.send(struct.pack('!I', length))
+    sock.send(data)
 
 def recv_one_message(sock):
     lengthbuf = recvall(sock, 4)
@@ -79,24 +82,28 @@ def recvall(sock, count):
     return buf
 
 def serverSocket():
-    s = socket.socket()  # Create a socket object
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Create a socket object
     host = socket.gethostname()  # Get local machine name
     port = 12345  # Reserve a port for your service.
     s.bind((host, port))  # Bind to the port
 
     while True:
         s.listen(5)  # Now wait for client connection.
-        #try:
-        while True:
-            c, addr = s.accept()  # Establish connection with client.
+        print 'Waiting for connection...'
+        c, addr = s.accept()  # Establish connection with client.
+        try:
             print 'Got connection from', addr
-            while c:
+            while True:
                 data = recv_one_message(c)
                 accessPoints = pickle.loads(data)
-                channelCheckAndAssignment(accessPoints)
-            c.close()  # Close the connection
-        #except:
-            #print 'Client disconnected'
+
+                channelOptimization(accessPoints)
+
+                data = pickle.dumps(accessPoints)
+                send_one_message(c,data)
+        finally:
+            c.close()
+            print 'Client disconnected'
 
 thread.start_new_thread(serverSocket, ())
 
