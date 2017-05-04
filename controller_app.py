@@ -12,7 +12,6 @@ from ryu.lib.packet import packet
 from ryu.lib.packet import ethernet
 import socket
 import thread
-import time
 
 apOverlap = {}
 channels = [1,6,11,3,8,4,9,2,7,5,10]
@@ -52,7 +51,67 @@ def changeChannel(accessPoints, apToChange):
                     break
             if tmp is len(apOverlap[apToChange])-1:
                 accessPoints[apToChange]['channel'][0] = ch
+                print 'changeChannel:'
+                print 'AP to change: ' + apToChange + ': ' + str(ch)
+                print apOverlap
                 break
+
+def lastChance(accessPoints, list, neighborsList):
+    channel = accessPoints[list[0]]['channel'][0]
+    for ap in neighborsList:
+        tmp = 0
+        for apTemp in range(0, len(apOverlap[ap])):
+            tmp = apTemp
+            if list[0] is not apOverlap[ap][apTemp]:
+                if list[1] is not apOverlap[ap][apTemp]:
+                    if channel is accessPoints[apOverlap[ap][apTemp]]['channel'][0]:
+                        break
+        if tmp is len(apOverlap[ap]) - 1:
+            if list[0] not in apOverlap[ap] or list[1] not in apOverlap[ap]:
+                tmpChannel = accessPoints[ap]['channel'][0]
+                accessPoints[ap]['channel'][0] = channel
+                result = False
+                for apInList in list:
+                    for ch in range(0, 3):
+                        if channels[ch] is not accessPoints[apInList]['channel'][0]:
+                            tmp = 0
+                            for apTempInList in range(0, len(apOverlap[apInList])):
+                                tmp = apTempInList
+                                if channels[ch] is accessPoints[apOverlap[apInList][apTempInList]]['channel'][0]:
+                                    break
+                            if tmp is len(apOverlap[apInList]) - 1:
+                                accessPoints[apInList]['channel'][0] = channels[ch]
+                                print 'lastChance'
+                                print 'AP to change: ' + ap + ': ' + str(channel)
+                                print 'tryBest in lastChance:'
+                                print 'AP to change: ' + apInList + ': ' + str(channels[ch])
+                                result = True
+                if result is True:
+                    return True
+                accessPoints[ap]['channel'][0] = tmpChannel
+    return False
+
+def tryBest(accessPoints, list):
+    for ap in list:
+        for ch in range(0, 3):
+            if channels[ch] is not accessPoints[ap]['channel'][0]:
+                tmp = 0
+                for apTemp in range(0, len(apOverlap[ap])):
+                    tmp = apTemp
+                    if channels[ch] is accessPoints[apOverlap[ap][apTemp]]['channel'][0]:
+                        break
+                if tmp is len(apOverlap[ap])-1:
+                    accessPoints[ap]['channel'][0] = channels[ch]
+                    print 'tryBest:'
+                    print 'AP to change: ' + ap + ': ' + str(channels[ch])
+                    return True
+    neighborsList = []
+    for ap in list:
+        for apTemp in range(0, len(apOverlap[ap])):
+            neighborsList.append(apOverlap[ap][apTemp])
+    if lastChance(accessPoints, list, neighborsList) is False:
+        return False
+    return True
 
 def channelOptimization(accessPoints):
     stations = getStations(accessPoints)
@@ -60,7 +119,12 @@ def channelOptimization(accessPoints):
     for ap in apOverlap:
         for apTemp in range(0, len(apOverlap[ap])):
             if accessPoints[ap]['channel'][0] is accessPoints[apOverlap[ap][apTemp]]['channel'][0]:
-                changeChannel(accessPoints, apOverlap[ap][apTemp])
+                collideList = [ap]
+                collideList.append(apOverlap[ap][apTemp])
+                if tryBest(accessPoints, collideList) is False:
+                    changeChannel(accessPoints, apOverlap[ap][apTemp])
+                print'-------------------------------------------------------------'
+
 
 def send_one_message(sock, data):
     length = len(data)
@@ -82,15 +146,15 @@ def recvall(sock, count):
     return buf
 
 def serverSocket():
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Create a socket object
-    host = socket.gethostname()  # Get local machine name
-    port = 12345  # Reserve a port for your service.
-    s.bind((host, port))  # Bind to the port
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Vytvorenie soketu
+    host = socket.gethostname()  # Nazov lokalneho stroja
+    port = 10000  # Rezervovanie portu pre komunikaciu
+    s.bind((host, port))  # Priradenie hosta na port
 
     while True:
-        s.listen(5)  # Now wait for client connection.
+        s.listen(5)  # Cakanie na pripojenie klienta
         print 'Waiting for connection...'
-        c, addr = s.accept()  # Establish connection with client.
+        c, addr = s.accept()  # Vytvorenie spojenia s klientom
         try:
             print 'Got connection from', addr
             while True:

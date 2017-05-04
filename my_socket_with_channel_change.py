@@ -3,16 +3,14 @@ import socket
 import pickle
 import struct
 import time
-
 import subprocess
-
 
 class MySocket():
 
     def start(self, net):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Create a socket object
         host = socket.gethostname()  # Get local machine name
-        port = 12345  # Reserve a port for your service.
+        port = 10000  # Reserve a port for your service.
 
         s.connect((host, port))
         try:
@@ -52,7 +50,7 @@ class MySocket():
     def updateChanges(self, accessPoints, net):
         for ap in accessPoints:
             for apNet in net.accessPoints:
-                if ap in apNet.name:
+                if ap == apNet.name:
                     if accessPoints[ap]['channel'][0] is not apNet.params['channel'][0]:
                         self.changeChannel(ap, accessPoints[ap]['channel'][0])
                         apNet.params['channel'][0] = accessPoints[ap]['channel'][0]
@@ -62,19 +60,18 @@ class MySocket():
     def execute(self, cmd):
         process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         (result, error) = process.communicate()
-
         rc = process.wait()
-
         if rc != 0:
             print "Error: failed to execute command:", cmd
             print error
         return result
 
     def changeChannel(self, ap, channel):
-        fileToChange = self.execute("ps -aux | grep " + str(ap) + "-wlan1.apconf | cut -d ':' -f3 | cut -d ' ' -f4 | head -n1")
+        fileToChange = self.execute("ps -aux | grep " + str(ap) + "-wlan1.apconf | grep hostapd | cut -d ':' -f3 | cut -d ' ' -f4 | head -n1")
         self.execute("sudo sed -i 's/channel=.*/channel=" + str(channel) + "/' " + fileToChange)
         self.execute("sudo kill `ps -aux | grep " + str(ap) + "-wlan1.apconf | tr -s ' ' | cut -d ' ' -f2 | head -n1`")
         self.execute("sudo hostapd -B " + fileToChange)
+        #print 'channel changed on ' + str(ap) + ': ' + str(channel)
 
     def send_one_message(self, sock, data):
         length = len(data)
