@@ -1,7 +1,0 @@
-menu "Networking"
-config NET
-tristate "my network driver" # --> this line gives the desc of the ko.
-depends on <ARCH>
-default y if <ARCH>
-help
-	<Text displayed when help is selected for your driver>.

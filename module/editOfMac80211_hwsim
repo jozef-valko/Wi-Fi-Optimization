@@ -1,6 +1,0 @@
-530-> int rssi;
-1162-> rx_status.signal = data->rssi;
-3028-> int signal;
-3033-> signal = nla_get_u32(info->attrs[HWSIM_ATTR_SIGNAL]);
-3047-> data->rssi = signal;
-
