@@ -34,8 +34,7 @@ def topology():
     ap11 = net.addAccessPoint('ap11', ssid='AP11', mode='g', channel='6', position='120,40,0', range='30')
     ap12 = net.addAccessPoint('ap12', ssid='AP12', mode='g', channel='11', position='160,40,0', range='30')
 
-    sta1 = net.addStation('sta1', mac='00:00:00:00:00:10', ip='10.0.0.10/24')
-    #sta2 = net.addStation('sta2', mac='00:00:00:00:00:20', ip='10.0.0.20/24', position='20,20,0')
+    sta1 = net.addStation('sta1', mac='00:00:00:00:00:10', ip='10.0.0.10/24', position='0,0,0')
     c0 = net.addController('c0', controller=RemoteController, ip='127.0.0.1', port=6653)
 
     net.configureWifiNodes()
@@ -47,11 +46,17 @@ def topology():
     net.addLink(sw10, h1)
     net.addLink(sw20, h2)
     net.addLink(sw10, ap1)
-    net.addLink(sw20, ap2)
-    net.addLink(sw30, ap3)
-    net.addLink(sw40, ap4)
-    #net.addLink(sw30, ap5)
-    net.addLink(ap1, sta1)
+    net.addLink(sw10, ap2)
+    net.addLink(sw10, ap6)
+    net.addLink(sw20, ap3)
+    net.addLink(sw20, ap4)
+    net.addLink(sw20, ap8)
+    net.addLink(sw30, ap5)
+    net.addLink(sw30, ap9)
+    net.addLink(sw30, ap10)
+    net.addLink(sw40, ap7)
+    net.addLink(sw40, ap11)
+    net.addLink(sw40, ap12)
 
     print "Starting network"
     net.build()
@@ -74,15 +79,6 @@ def topology():
     ap12.start([c0])
 
     net.plotGraph(max_x=200, max_y=200)
-
-    net.associationControl('ssf')
-    net.seed(1)
-
-    start = 2
-    net.startMobility(startTime=0, model='RandomDirection', max_x=200, max_y=200, min_v=3.0, max_v=5.0)
-    # net.mobility(sta2, 'start', time=start, position='0.0,0.0,0.0')
-    # net.mobility(sta2, 'stop', time=start+10, position='20.0,20.0,0.0')
-    # net.stopMobility(stopTime=start+11)
 
     thread.start_new_thread(MySocket().start, (net, ))
 

@@ -25,11 +25,10 @@ def topology():
     ap2 = net.addAccessPoint('ap2', ssid='AP2', mode='g', channel='6', position='60,60,0', range='30')
     ap3 = net.addAccessPoint('ap3', ssid='AP3', mode='g', channel='11', position='40,40,0', range='30')
     ap4 = net.addAccessPoint('ap4', ssid='AP4', mode='g', channel='1', position='60,40,0', range='30')
-    ap5 = net.addAccessPoint('ap5', ssid='AP5', mode='g', channel='6', position='80,40,0', range='30')
+    ap5 = net.addAccessPoint('ap5', ssid='AP5', mode='g', channel='6', position='80,50,0', range='30')
 
 
     sta1 = net.addStation('sta1', mac='00:00:00:00:00:10', ip='10.0.0.10/24', position='0,0,0')
-    #sta2 = net.addStation('sta2', mac='00:00:00:00:00:20', ip='10.0.0.20/24', position='20,20,0')
     c0 = net.addController('c0', controller=RemoteController, ip='127.0.0.1', port=6653)
 
     net.configureWifiNodes()
@@ -37,7 +36,7 @@ def topology():
     print "Associating and creating links"
     net.addLink(sw10, sw20)
     net.addLink(sw20, sw30)
-    net.addLink(sw30, sw40)
+    net.addLink(sw10, sw40)
     net.addLink(sw10, h1)
     net.addLink(sw20, h2)
     net.addLink(sw10, ap1)
@@ -45,7 +44,6 @@ def topology():
     net.addLink(sw30, ap3)
     net.addLink(sw40, ap4)
     net.addLink(sw30, ap5)
-    net.addLink(ap1, sta1)
 
     print "Starting network"
     net.build()
@@ -62,11 +60,11 @@ def topology():
 
     net.plotGraph(max_x=100, max_y=100)
 
-    # start = 2
-    # net.startMobility(startTime=start)
-    # net.mobility(sta2, 'start', time=start, position='0.0,0.0,0.0')
-    # net.mobility(sta2, 'stop', time=start+10, position='20.0,20.0,0.0')
-    # net.stopMobility(stopTime=start+11)
+    start = 2
+    net.startMobility(startTime=start)
+    net.mobility(sta1, 'start', time=start, position='0.0,0.0,0.0')
+    net.mobility(sta1, 'stop', time=start+30, position='60.0,50.0,0.0')
+    net.stopMobility(stopTime=start+31)
 
     thread.start_new_thread(MySocket().start, (net, ))
 

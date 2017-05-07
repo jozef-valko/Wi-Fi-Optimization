@@ -48,6 +48,7 @@ def changeChannel(accessPoints, apToChange):
             for ap in range(0, len(apOverlap[apToChange])):
                 tmp = ap
                 if ch is accessPoints[apOverlap[apToChange][ap]]['channel'][0]:
+                    tmp = 0
                     break
             if tmp is len(apOverlap[apToChange])-1:
                 accessPoints[apToChange]['channel'][0] = ch
@@ -78,6 +79,7 @@ def lastChance(accessPoints, list, neighborsList):
                             for apTempInList in range(0, len(apOverlap[apInList])):
                                 tmp = apTempInList
                                 if channels[ch] is accessPoints[apOverlap[apInList][apTempInList]]['channel'][0]:
+                                    tmp = 0
                                     break
                             if tmp is len(apOverlap[apInList]) - 1:
                                 accessPoints[apInList]['channel'][0] = channels[ch]
@@ -85,6 +87,7 @@ def lastChance(accessPoints, list, neighborsList):
                                 print 'AP to change: ' + ap + ': ' + str(channel)
                                 print 'tryBest in lastChance:'
                                 print 'AP to change: ' + apInList + ': ' + str(channels[ch])
+                                print apOverlap
                                 result = True
                 if result is True:
                     return True
@@ -99,11 +102,13 @@ def tryBest(accessPoints, list):
                 for apTemp in range(0, len(apOverlap[ap])):
                     tmp = apTemp
                     if channels[ch] is accessPoints[apOverlap[ap][apTemp]]['channel'][0]:
+                        tmp = 0
                         break
                 if tmp is len(apOverlap[ap])-1:
                     accessPoints[ap]['channel'][0] = channels[ch]
                     print 'tryBest:'
                     print 'AP to change: ' + ap + ': ' + str(channels[ch])
+                    print apOverlap
                     return True
     neighborsList = []
     for ap in list:
@@ -123,8 +128,7 @@ def channelOptimization(accessPoints):
                 collideList.append(apOverlap[ap][apTemp])
                 if tryBest(accessPoints, collideList) is False:
                     changeChannel(accessPoints, apOverlap[ap][apTemp])
-                print'-------------------------------------------------------------'
-
+                    print'-------------------------------------------------------------'
 
 def send_one_message(sock, data):
     length = len(data)
